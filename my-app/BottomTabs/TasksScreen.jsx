@@ -7,28 +7,33 @@ import {
   FlatList,
   StyleSheet,
   Modal,
+  Alert,
+  Dimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+
+const screenWidth = Dimensions.get("window").width;
+const itemWidth = screenWidth / 2 - 45;
 
 // Tasks Screen
 const TasksScreen = ({ tasks, setTasks }) => {
   const [task, setTask] = useState("");
   const [editTaskIndex, setEditTaskIndex] = useState(-1);
-  const [isEditingMode, setIsEditingMode] = useState(false);
   const [showDatePickerModal, setShowDatePickerModal] = useState(false);
   const [date, setDate] = useState(new Date());
 
   const handleAddTask = () => {
+    setShowDatePickerModal(false);
     if (task) {
       const newTask = {
-        created: date,
+        created: new Date(),
         updated: null,
         text: task,
         completed: false,
+        dueDate: date,
       };
       if (newTask.text.trim()) {
-        setIsEditingMode(false);
         if (editTaskIndex !== -1) {
           if (newTask.text !== tasks[editTaskIndex].text) {
             const updatedTasks = [...tasks];
@@ -36,6 +41,16 @@ const TasksScreen = ({ tasks, setTasks }) => {
               ...updatedTasks[editTaskIndex],
               text: task,
               updated: new Date(),
+              dueDate: date,
+            };
+            setTasks(updatedTasks);
+            setEditTaskIndex(-1);
+          } else {
+            const updatedTasks = [...tasks];
+            updatedTasks[editTaskIndex] = {
+              ...updatedTasks[editTaskIndex],
+              updated: new Date(),
+              dueDate: newTask.dueDate,
             };
             setTasks(updatedTasks);
             setEditTaskIndex(-1);
@@ -51,9 +66,32 @@ const TasksScreen = ({ tasks, setTasks }) => {
   };
 
   const handleCancelEdit = () => {
-    setIsEditingMode(false);
     setTask("");
     setEditTaskIndex(-1);
+  };
+
+  const handleCancelDateTimeEdit = () => {
+    setShowDatePickerModal(false);
+    if (task) {
+      if (task.trim()) {
+        if (editTaskIndex !== -1) {
+          if (task !== tasks[editTaskIndex].text) {
+            const updatedTasks = [...tasks];
+            updatedTasks[editTaskIndex] = {
+              ...updatedTasks[editTaskIndex],
+              text: task,
+              updated: new Date(),
+            };
+            setTasks(updatedTasks);
+            setEditTaskIndex(-1);
+          }
+        }
+        setTask("");
+        setDate(new Date());
+        setShowDatePickerModal(false);
+        setEditTaskIndex(-1);
+      }
+    }
   };
 
   const handleCompletedTask = (index) => {
@@ -63,11 +101,12 @@ const TasksScreen = ({ tasks, setTasks }) => {
   };
 
   const handleSetDateTimeTask = () => {
-    setShowDatePickerModal(true);
+    if (task.trim()) {
+      setShowDatePickerModal(true);
+    }
   };
 
   const handleEditTask = (index) => {
-    setIsEditingMode(true);
     setTask(tasks[index].text);
     setEditTaskIndex(index);
   };
@@ -86,74 +125,87 @@ const TasksScreen = ({ tasks, setTasks }) => {
 
   const handleDeleteAllTasks = () => {
     setTasks([]);
-  }
+  };
 
-  const renderItem = ({ item, index }) => (
-    <View
-      style={[styles.task, editTaskIndex === index ? styles.editingTask : null]}
-    >
-      <Text style={styles.datetime}>
-        CREATED: {item.created.toLocaleString()}
-      </Text>
-      {item.updated ? (
-        <Text style={styles.datetime}>
-          UPDATED: {item.updated.toLocaleString()}
-        </Text>
-      ) : null}
-      <Text
-        style={[
-          styles.itemList,
-          item.completed && {
-            color: "lightgray",
-            textDecorationLine: "line-through",
-          },
-        ]}
+  const renderItem = ({ item, index }) => {
+    return (
+      <TouchableOpacity
+        onPress={() => handleCompletedTask(index)}
+        disabled={editTaskIndex === index}
       >
-        {item.text}
-      </Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          onPress={() => handleCompletedTask(index)}
-          style={styles.iconButton}
-          disabled={editTaskIndex === index}
+        <View
+          style={[
+            styles.task,
+            editTaskIndex === index ? styles.editingTask : null,
+          ]}
         >
-          <Icon
-            name={item.completed ? "checkbox-outline" : "square-outline"}
-            size={24}
-            color={editTaskIndex === index ? "gray" : "black"}
-          />
-        </TouchableOpacity>
-        {/*<TouchableOpacity
-            onPress={() => handleSetDateTimeTask()}
-            style={styles.iconButton}
+          <Text style={styles.datetime}>
+            CREATED: {item.created.toLocaleString()}
+          </Text>
+          {item.updated ? (
+            <Text style={styles.datetime}>
+              UPDATED: {item.updated.toLocaleString()}
+            </Text>
+          ) : null}
+          <Text
+            style={[
+              styles.itemList,
+              item.completed && {
+                color: "lightgray",
+                textDecorationLine: "line-through",
+              },
+            ]}
           >
-            <Icon name="calendar-outline" size={24} color="black" />
-          </TouchableOpacity>*/}
-        <TouchableOpacity
-          onPress={() => handleEditTask(index)}
-          style={styles.iconButton}
-          disabled={item.completed}
-        >
-          <Icon
-            name="create-outline"
-            size={24}
-            color={item.completed ? "gray" : "black"}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => handleDeleteTask(index)}
-          style={styles.iconButton}
-          disabled={editTaskIndex === index}
-        >
-          <Icon
-            name="trash-outline"
-            size={24}
-            color={editTaskIndex === index ? "gray" : "black"}
-          />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+            {item.text}
+          </Text>
+          <Text
+            style={[
+              styles.itemList,
+              item.completed && {
+                color: "lightgray",
+                textDecorationLine: "line-through",
+              },
+            ]}
+          >
+            {item.dueDate.toLocaleString()}
+          </Text>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              onPress={() => handleEditTask(index)}
+              disabled={item.completed}
+            >
+              <Icon
+                name="create-outline"
+                size={24}
+                color={item.completed ? "gray" : "black"}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleDeleteTask(index)}
+              onLongPress={() =>
+                Alert.alert(
+                  "",
+                  "Are you sure you want to delete all tasks?\nThis action cannot be undone",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "OK", onPress: handleDeleteAllTasks },
+                  ],
+                  { cancelable: true }
+                )
+              }
+              disabled={editTaskIndex === index}
+            >
+              <Icon
+                name="trash-outline"
+                size={24}
+                color={editTaskIndex === index ? "gray" : "black"}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -172,33 +224,46 @@ const TasksScreen = ({ tasks, setTasks }) => {
           <Text style={styles.addButtonText}>Cancel</Text>
         </TouchableOpacity>
       )}
-      <TouchableOpacity style={styles.addButton} onPress={handleAddTask}>
-        <Text style={styles.addButtonText}>
-          {editTaskIndex !== -1 ? "Update" : "Add"}
-        </Text>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={handleSetDateTimeTask}
+      >
+        <Text style={styles.addButtonText}>Set Due Date</Text>
       </TouchableOpacity>
       <Modal
         transparent={true}
         animationType="fade"
         visible={showDatePickerModal}
-        onRequestClose={() => setShowDatePickerModal(false)}
+        onRequestClose={() => handleAddTask()}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Date and Time</Text>
             <DateTimePicker
               value={date}
               mode="datetime"
               is24Hour={true}
               display="default"
               onChange={onDateChange}
+              themeVariant="light"
             />
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowDatePickerModal(false)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.row}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => handleAddTask()}
+              >
+                <Text style={styles.closeButtonText}>
+                  {editTaskIndex !== -1 ? "Update" : "Add"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.lastCloseButton}
+                onPress={() => handleCancelDateTimeEdit()}
+              >
+                <Text style={styles.closeButtonText}>
+                  {editTaskIndex !== -1 ? "Don't set Due Date" : "Cancel"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -212,11 +277,10 @@ const TasksScreen = ({ tasks, setTasks }) => {
           data={tasks}
           renderItem={renderItem}
           keyExtractor={(_, index) => index.toString()}
+          numColumns={2}
+          columnWrapperStyle={{ justifyContent: "space-between" }}
         />
       )}
-      <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAllTasks} disabled={isEditingMode}>
-        <Text style={styles.addButtonText}>Clear All Tasks</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -249,16 +313,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 50,
   },
+  row: {
+    flexDirection: "row",
+  },
   cancelButton: {
     backgroundColor: "black",
     padding: 10,
     borderRadius: 5,
     marginBottom: 5,
-  },
-  deleteButton: {
-    backgroundColor: "red",
-    padding: 10,
-    borderRadius: 5,
   },
   addButtonText: {
     color: "white",
@@ -273,6 +335,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 10,
     backgroundColor: "#f9f9f9",
+    width: itemWidth,
   },
   editingTask: {
     borderColor: "#0f0f0f",
@@ -297,15 +360,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  iconButton: {
-    flex: 1,
-    alignItems: "center",
-  },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "#00000080",
   },
   modalContent: {
     width: 300,
@@ -319,6 +378,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   closeButton: {
+    marginTop: 20,
+    backgroundColor: "black",
+    padding: 10,
+    borderRadius: 5,
+    marginRight: 25,
+  },
+  lastCloseButton: {
     marginTop: 20,
     backgroundColor: "black",
     padding: 10,

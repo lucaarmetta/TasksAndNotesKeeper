@@ -7,6 +7,9 @@ import WelcomeScreen from "./Stacks/WelcomeScreen";
 import TasksScreen from "./BottomTabs/TasksScreen";
 import NotesScreen from "./BottomTabs/NotesScreen";
 import SettingsScreen from "./BottomTabs/SettingsScreen";
+import AccountSettingsScreen from "./BottomTabs/Screens/AccountSettingsScreen";
+import DangerZoneSettingsScreen from "./BottomTabs/Screens/DangerZoneSettingsScreen";
+import TutorialSettingsScreen from "./BottomTabs/Screens/TutorialSettingsScreen";
 
 // Create bottom tab navigator
 const Tab = createBottomTabNavigator();
@@ -28,6 +31,8 @@ const App = () => {
       <Stack.Navigator
         screenOptions={{
           headerTitle: "TasksAndNotesKeeper",
+          headerBackTitle: "",
+          headerBackTitleVisible: false,
         }}
       >
         <Stack.Screen
@@ -35,10 +40,7 @@ const App = () => {
           component={WelcomeScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="Tabs"
-          options={{ headerShown: false }}
-        >
+        <Stack.Screen name="Tabs" options={{ headerShown: false }}>
           {() => (
             <TabNavigator
               tasks={tasks}
@@ -49,6 +51,18 @@ const App = () => {
             />
           )}
         </Stack.Screen>
+        <Stack.Screen
+          name="TutorialSettings"
+          component={TutorialSettingsScreen}
+        />
+        <Stack.Screen
+          name="AccountSettings"
+          component={AccountSettingsScreen}
+        />
+        <Stack.Screen
+          name="DangerZoneSettings"
+          component={DangerZoneSettingsScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -62,7 +76,7 @@ const TabNavigator = ({ tasks, setTasks, notes, setNotes, clearData }) => {
         options={{
           headerTitle: "TasksAndNotesKeeper",
           tabBarIcon: ({ color, size }) => (
-            <Icon name="checkmark-outline" color={color} size={size} />
+            <Icon name="checkmark-done-outline" color={color} size={size} />
           ),
         }}
       >
@@ -92,12 +106,7 @@ const TabNavigator = ({ tasks, setTasks, notes, setNotes, clearData }) => {
           ),
         }}
       >
-        {(props) => (
-          <SettingsScreen
-            {...props}
-            clearData={clearData}
-          />
-        )}
+        {(props) => <SettingsScreen {...props} clearData={clearData} />}
       </Tab.Screen>
     </Tab.Navigator>
   );

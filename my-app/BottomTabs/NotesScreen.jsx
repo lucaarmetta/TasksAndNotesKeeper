@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  Alert,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 
@@ -13,7 +14,6 @@ import Icon from "react-native-vector-icons/Ionicons";
 const NotesScreen = ({ notes, setNotes }) => {
   const [note, setNote] = useState("");
   const [editNoteIndex, setEditNoteIndex] = useState(-1);
-  const [isEditingMode, setIsEditingMode] = useState(false);
   const [date, setDate] = useState(new Date());
 
   const handleAddNote = () => {
@@ -24,7 +24,6 @@ const NotesScreen = ({ notes, setNotes }) => {
         text: note,
       };
       if (newNote.text.trim()) {
-        setIsEditingMode(false);
         if (editNoteIndex !== -1) {
           if (newNote.text !== notes[editNoteIndex].text) {
             const updatedNotes = [...notes];
@@ -46,13 +45,11 @@ const NotesScreen = ({ notes, setNotes }) => {
   };
 
   const handleCancelEdit = () => {
-    setIsEditingMode(false);
     setNote("");
     setEditNoteIndex(-1);
   };
 
   const handleEditNote = (index) => {
-    setIsEditingMode(true);
     setNote(notes[index].text);
     setEditNoteIndex(index);
   };
@@ -64,7 +61,7 @@ const NotesScreen = ({ notes, setNotes }) => {
 
   const handleDeleteAllNotes = () => {
     setNotes([]);
-  }
+  };
 
   const renderItem = ({ item, index }) => (
     <View
@@ -88,6 +85,17 @@ const NotesScreen = ({ notes, setNotes }) => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleDeleteNote(index)}
+          onLongPress={() =>
+            Alert.alert(
+              "",
+              "Are you sure you want to delete all notes?\nThis action cannot be undone",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "OK", onPress: handleDeleteAllNotes },
+              ],
+              { cancelable: true }
+            )
+          }
           style={styles.iconButton}
           disabled={editNoteIndex === index}
         >
@@ -136,9 +144,6 @@ const NotesScreen = ({ notes, setNotes }) => {
           keyExtractor={(_, index) => index.toString()}
         />
       )}
-      <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAllNotes} disabled={isEditingMode}>
-        <Text style={styles.addButtonText}>Clear All Notes</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -171,11 +176,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginBottom: 50,
-  },
-  deleteButton: {
-    backgroundColor: "red",
-    padding: 10,
-    borderRadius: 5,
   },
   cancelButton: {
     backgroundColor: "black",
