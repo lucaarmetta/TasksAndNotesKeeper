@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
 // Danger Zone Settings Screen
 const DangerZoneSettingsScreen = ({ route }) => {
@@ -9,7 +9,20 @@ const DangerZoneSettingsScreen = ({ route }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Danger Zone</Text>
       <View style={styles.wrapper}>
-        <TouchableOpacity onPress={clearData} style={styles.dangerButton}>
+        <TouchableOpacity
+          onPress={() =>
+            Alert.alert(
+              "",
+              "Are you sure you want to delete both tasks and notes?\nThis action cannot be undone.",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "OK", onPress: clearData },
+              ],
+              { cancelable: true }
+            )
+          }
+          style={styles.dangerButton}
+        >
           <Text style={styles.dangerButtonText}>
             Clear Both Tasks and Notes
           </Text>
@@ -20,7 +33,17 @@ const DangerZoneSettingsScreen = ({ route }) => {
           able to restore it.
         </Text>
         <TouchableOpacity
-          onPress={() => console.log("Delete account pressed")}
+          onPress={() =>
+            Alert.alert(
+              "",
+              "Are you sure you want to delete your account?\nYour data will be lost.\nThis action cannot be undone.",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "OK", onPress: console.log("Delete account pressed") },
+              ],
+              { cancelable: true }
+            )
+          }
           style={styles.lastDangerButton}
         >
           <Text style={styles.dangerButtonText}>Delete Account</Text>

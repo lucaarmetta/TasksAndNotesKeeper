@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 
 // Account Settings Screen
 const AccountSettingsScreen = () => {
@@ -8,7 +8,16 @@ const AccountSettingsScreen = () => {
       <Text style={styles.title}>Account</Text>
       <View style={styles.wrapper}>
         <TouchableOpacity
-          onPress={() => console.log("Logout pressed")}
+          onPress={() =>
+            Alert.alert(
+              "",
+              "Are you sure you want to logout?",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "OK", onPress: console.log("Logout pressed") },
+              ],
+              { cancelable: true }
+            )}
           style={styles.logoutButton}
         >
           <Text style={styles.clearButtonText}>Logout</Text>

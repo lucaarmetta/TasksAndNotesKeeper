@@ -88,7 +88,7 @@ const NotesScreen = ({ notes, setNotes }) => {
           onLongPress={() =>
             Alert.alert(
               "",
-              "Are you sure you want to delete all notes?\nThis action cannot be undone",
+              "Are you sure you want to delete all notes?\nThis action cannot be undone.",
               [
                 { text: "Cancel", style: "cancel" },
                 { text: "OK", onPress: handleDeleteAllNotes },

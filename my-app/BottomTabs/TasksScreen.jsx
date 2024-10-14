@@ -185,7 +185,7 @@ const TasksScreen = ({ tasks, setTasks }) => {
               onLongPress={() =>
                 Alert.alert(
                   "",
-                  "Are you sure you want to delete all tasks?\nThis action cannot be undone",
+                  "Are you sure you want to delete all tasks?\nThis action cannot be undone.",
                   [
                     { text: "Cancel", style: "cancel" },
                     { text: "OK", onPress: handleDeleteAllTasks },
